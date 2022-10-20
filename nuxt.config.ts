@@ -13,7 +13,11 @@ export default defineNuxtConfig({
     '@nuxtjs/color-mode',
     // https://github.com/huntersofbook/huntersofbook/tree/main/packages/naive-ui-nuxt
     '@huntersofbook/naive-ui-nuxt',
+    'nuxt-directus',
   ],
+  directus: {
+    url: 'http://localhost:8055',
+  },
   build: {
     transpile: ['@headlessui/vue'],
   },
