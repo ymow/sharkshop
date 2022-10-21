@@ -1,20 +1,4 @@
-<!--
-  This example requires some changes to your config:
-
-  ```
-  // tailwind.config.js
-  module.exports = {
-    // ...
-    plugins: [
-      // ...
-      require('@tailwindcss/forms'),
-      require('@tailwindcss/typography'),
-      require('@tailwindcss/aspect-ratio'),
-    ],
-  }
-  ```
--->
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue'
 import {
   Dialog,
@@ -49,6 +33,17 @@ import {
 } from '@heroicons/vue/24/outline'
 import { StarIcon } from '@heroicons/vue/20/solid'
 
+import { toCurrency } from '@/utils/utils'
+import { useProductStore } from '@/store/products'
+import type { Product } from '@/store/products'
+import { useCartStore, userCart } from '@/store/cart'
+
+const productStore = useProductStore()
+const cart = userCart()
+const productID = useRoute().params.id.toString()
+
+const product2 = computed<Product>(() => productStore.items[productID])
+console.log(product2)
 const navigation = {
   categories: [
     {
@@ -315,7 +310,6 @@ const selectedColor = ref(product.colors[0])
 </script>
 
 <template>
-  <h1>123</h1>
   <div class="bg-white">
     <!-- Mobile menu -->
     <TransitionRoot as="template" :show="open">
@@ -501,11 +495,12 @@ const selectedColor = ref(product.colors[0])
 
               <!-- Cart -->
               <div class="ml-4 flow-root lg:ml-6">
-                <a href="#" class="group -m-2 flex items-center p-2">
+                <CartsDisplay />
+                <!-- <a href="#" class="group -m-2 flex items-center p-2">
                   <ShoppingBagIcon class="h-6 w-6 flex-shrink-0 text-gray-400 group-hover:text-gray-500" aria-hidden="true" />
                   <span class="ml-2 text-sm font-medium text-gray-700 group-hover:text-gray-800">0</span>
                   <span class="sr-only">items in cart, view bag</span>
-                </a>
+                </a> -->
               </div>
             </div>
           </div>
@@ -516,6 +511,7 @@ const selectedColor = ref(product.colors[0])
     <main class="mx-auto max-w-7xl sm:px-6 sm:pt-16 lg:px-8">
       <div class="mx-auto max-w-2xl lg:max-w-none">
         <!-- Product -->
+        <p>{{ product2 }}</p>
         <div class="lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-8">
           <!-- Image gallery -->
           <TabGroup as="div" class="flex flex-col-reverse">
@@ -602,9 +598,15 @@ const selectedColor = ref(product.colors[0])
               </div>
 
               <div class="mt-10 flex">
-                <button type="submit" class="flex max-w-xs flex-1 items-center justify-center rounded-md border border-transparent bg-indigo-600 py-3 px-8 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-50 sm:w-full">
-                  Add to bag
-                </button>
+                <n-button
+                  class="btn btn-primary"
+                  strong
+                  secondary
+                  type="success"
+                  @click="cart.addToCart(product)"
+                >
+                  Add to Cart
+                </n-button>
 
                 <button type="button" class="ml-4 flex items-center justify-center rounded-md py-3 px-3 text-gray-400 hover:bg-gray-100 hover:text-gray-500">
                   <HeartIcon class="h-6 w-6 flex-shrink-0" aria-hidden="true" />

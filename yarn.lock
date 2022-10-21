@@ -1862,6 +1862,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@vicons/ionicons4@npm:^0.12.0":
+  version: 0.12.0
+  resolution: "@vicons/ionicons4@npm:0.12.0"
+  checksum: f6c57cea41d3c1425f8d87bf5bc26e5a2230d3dda9dd47e3134517090429d2db2829cd9afa8d260f4e1afaff9dd04a27e590de0c9fd0d1048143e10653814041
+  languageName: node
+  linkType: hard
+
 "@vitejs/plugin-vue-jsx@npm:^2.0.1":
   version: 2.0.1
   resolution: "@vitejs/plugin-vue-jsx@npm:2.0.1"
@@ -9218,6 +9225,7 @@ __metadata:
     "@tailwindcss/line-clamp": 0.4.2
     "@tailwindcss/typography": 0.5.7
     "@unocss/nuxt": 0.45.30
+    "@vicons/ionicons4": ^0.12.0
     "@vueuse/nuxt": 9.3.1
     eslint: 8.25.0
     eslint-config-prettier: 8.5.0
