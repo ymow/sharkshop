@@ -39,11 +39,14 @@ import type { Product } from '@/store/products'
 import { useCartStore, userCart } from '@/store/cart'
 
 const productStore = useProductStore()
+
+productStore.fetchAll()
+
 const cart = userCart()
 const productID = useRoute().params.id.toString()
 
 const product2 = computed<Product>(() => productStore.items[productID])
-console.log(product2)
+
 const navigation = {
   categories: [
     {
@@ -513,40 +516,42 @@ const selectedColor = ref(product.colors[0])
         <!-- Product -->
         <p>{{ product2 }}</p>
         <div class="lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-8">
+          <img v-if="product2" :src="product2.cover_image_data" alt="Card Image" class="object-contain w-full h-64">
           <!-- Image gallery -->
-          <TabGroup as="div" class="flex flex-col-reverse">
-            <!-- Image selector -->
-            <div class="mx-auto mt-6 hidden w-full max-w-2xl sm:block lg:max-w-none">
-              <TabList class="grid grid-cols-4 gap-6">
-                <Tab v-for="image in product.images" :key="image.id" v-slot="{ selected }" class="relative flex h-24 cursor-pointer items-center justify-center rounded-md bg-white text-sm font-medium uppercase text-gray-900 hover:bg-gray-50 focus:outline-none focus:ring focus:ring-opacity-50 focus:ring-offset-4">
-                  <span class="sr-only"> {{ image.name }} </span>
-                  <span class="absolute inset-0 overflow-hidden rounded-md">
-                    <img :src="image.src" alt="" class="h-full w-full object-cover object-center">
-                  </span>
-                  <span class="pointer-events-none absolute inset-0 rounded-md ring-2 ring-offset-2" :class="[selected ? 'ring-indigo-500' : 'ring-transparent']" aria-hidden="true" />
-                </Tab>
-              </TabList>
-            </div>
 
-            <TabPanels class="aspect-w-1 aspect-h-1 w-full">
-              <TabPanel v-for="image in product.images" :key="image.id">
-                <img :src="image.src" :alt="image.alt" class="h-full w-full object-cover object-center sm:rounded-lg">
-              </TabPanel>
-            </TabPanels>
-          </TabGroup>
+          <!-- <TabGroup as="div" class="flex flex-col-reverse"> -->
+          <!-- Image selector -->
+          <!-- <div class="mx-auto mt-6 hidden w-full max-w-2xl sm:block lg:max-w-none">
+            <TabList class="grid grid-cols-4 gap-6">
+              <Tab v-for="image in product.images" :key="image.id" v-slot="{ selected }" class="relative flex h-24 cursor-pointer items-center justify-center rounded-md bg-white text-sm font-medium uppercase text-gray-900 hover:bg-gray-50 focus:outline-none focus:ring focus:ring-opacity-50 focus:ring-offset-4">
+                <span class="sr-only"> {{ image.name }} </span>
+                <span class="absolute inset-0 overflow-hidden rounded-md">
+                  <img :src="image.src" alt="" class="h-full w-full object-cover object-center">
+                </span>
+                <span class="pointer-events-none absolute inset-0 rounded-md ring-2 ring-offset-2" :class="[selected ? 'ring-indigo-500' : 'ring-transparent']" aria-hidden="true" />
+              </Tab>
+            </TabList> -->
+          <!-- </div> -->
+
+          <!-- <TabPanels class="aspect-w-1 aspect-h-1 w-full">
+            <TabPanel v-for="image in product.images" :key="image.id">
+              <img :src="image.src" :alt="image.alt" class="h-full w-full object-cover object-center sm:rounded-lg">
+            </TabPanel>
+          </TabPanels> -->
+          <!-- </TabGroup> -->
 
           <!-- Product info -->
           <div class="mt-10 px-4 sm:mt-16 sm:px-0 lg:mt-0">
-            <h1 class="text-3xl font-bold tracking-tight text-gray-900">
-              {{ product.name }}
+            <h1 v-if="product2" class="text-3xl font-bold tracking-tight text-gray-900">
+              {{ product2.name }}
             </h1>
 
             <div class="mt-3">
               <h2 class="sr-only">
                 Product information
               </h2>
-              <p class="text-3xl tracking-tight text-gray-900">
-                {{ product.price }}
+              <p v-if="product2" class="text-3xl tracking-tight text-gray-900">
+                {{ product2.price }}
               </p>
             </div>
 
@@ -644,7 +649,7 @@ const selectedColor = ref(product.colors[0])
           </div>
         </div>
 
-        <section aria-labelledby="related-heading" class="mt-10 border-t border-gray-200 py-16 px-4 sm:px-0">
+        <!-- <section aria-labelledby="related-heading" class="mt-10 border-t border-gray-200 py-16 px-4 sm:px-0">
           <h2 id="related-heading" class="text-xl font-bold text-gray-900">
             Customers also bought
           </h2>
@@ -675,7 +680,7 @@ const selectedColor = ref(product.colors[0])
               </div>
             </div>
           </div>
-        </section>
+        </section> -->
       </div>
     </main>
 

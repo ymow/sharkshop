@@ -53,10 +53,8 @@ export const useProductStore = defineStore({
       // const res = await fetch(`${fakeStoreUrl}/products`)
       const res = await fetch(`${sharkStoreUrl}/items/products`)
       const data: Product[] = await res.json()
-      console.log(data.data)
       this.ids = data.data.map((product) => {
         this.items[product.id] = product
-        console.log(this.items[product.id])
         return product.id
       })
     },

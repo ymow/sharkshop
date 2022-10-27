@@ -1,7 +1,7 @@
 import { ref, Ref } from 'vue'
 import { defineStore } from 'pinia'
 
-import { Product } from '@/stores/products'
+import { Product } from '@/store/products'
 
 interface CartState {
   cartItems: Ref<Array<Product>>
