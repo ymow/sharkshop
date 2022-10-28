@@ -3,16 +3,10 @@ import { ref } from 'vue'
 import {
   Dialog,
   DialogPanel,
-  Disclosure,
-  DisclosureButton,
-  DisclosurePanel,
   Popover,
   PopoverButton,
   PopoverGroup,
   PopoverPanel,
-  RadioGroup,
-  RadioGroupLabel,
-  RadioGroupOption,
   Tab,
   TabGroup,
   TabList,
@@ -21,31 +15,12 @@ import {
   TransitionChild,
   TransitionRoot,
 } from '@headlessui/vue'
-import {
-  Bars3Icon,
-  HeartIcon,
-  MagnifyingGlassIcon,
-  MinusIcon,
-  PlusIcon,
-  ShoppingBagIcon,
-  UserIcon,
-  XMarkIcon,
-} from '@heroicons/vue/24/outline'
-import { StarIcon } from '@heroicons/vue/20/solid'
-
+import { Bars3Icon, MagnifyingGlassIcon, ShoppingBagIcon, UserIcon, XMarkIcon } from '@heroicons/vue/24/outline'
+import { CheckIcon, ClockIcon } from '@heroicons/vue/20/solid'
 import { toCurrency } from '@/utils/utils'
 import { useProductStore } from '@/store/products'
 import type { Product } from '@/store/products'
-import { useCartStore, userCart } from '@/store/cart'
-
-const productStore = useProductStore()
-
-productStore.fetchAll()
-
-const cart = userCart()
-const productID = useRoute().params.id.toString()
-
-const product2 = computed<Product>(() => productStore.items[productID])
+import { userCart } from '@/store/cart'
 
 const navigation = {
   categories: [
@@ -148,7 +123,7 @@ const navigation = {
           href: '#',
           imageSrc: 'https://tailwindui.com/img/ecommerce-images/home-page-03-category-01.jpg',
           imageAlt:
-              'Wooden shelf with gray and olive drab green baseball caps, next to wooden clothes hanger with sweaters.',
+            'Wooden shelf with gray and olive drab green baseball caps, next to wooden clothes hanger with sweaters.',
         },
         {
           name: 'New Arrivals',
@@ -161,7 +136,7 @@ const navigation = {
           href: '#',
           imageSrc: 'https://tailwindui.com/img/ecommerce-images/category-page-02-image-card-06.jpg',
           imageAlt:
-              'Three shirts in gray, white, and blue arranged on table with same line drawing of hands and shapes overlapping on front of shirt.',
+            'Three shirts in gray, white, and blue arranged on table with same line drawing of hands and shapes overlapping on front of shirt.',
         },
       ],
       sections: [
@@ -232,54 +207,52 @@ const navigation = {
     { name: 'Stores', href: '#' },
   ],
 }
-const product = {
-  name: 'Zip Tote Basket',
-  price: '$140',
-  rating: 4,
-  images: [
-    {
-      id: 1,
-      name: 'Angled view',
-      src: 'https://tailwindui.com/img/ecommerce-images/product-page-03-product-01.jpg',
-      alt: 'Angled front view with bag zipped and handles upright.',
-    },
-    // More images...
-  ],
-  colors: [
-    { name: 'Washed Black', bgColor: 'bg-gray-700', selectedColor: 'ring-gray-700' },
-    { name: 'White', bgColor: 'bg-white', selectedColor: 'ring-gray-400' },
-    { name: 'Washed Gray', bgColor: 'bg-gray-500', selectedColor: 'ring-gray-500' },
-  ],
-  description: `
-      <p>The Zip Tote Basket is the perfect midpoint between shopping tote and comfy backpack. With convertible straps, you can hand carry, should sling, or backpack this convenient and spacious bag. The zip top and durable canvas construction keeps your goods protected for all-day use.</p>
-    `,
-  details: [
-    {
-      name: 'Features',
-      items: [
-        'Multiple strap configurations',
-        'Spacious interior with top zip',
-        'Leather handle and tabs',
-        'Interior dividers',
-        'Stainless strap loops',
-        'Double stitched construction',
-        'Water-resistant',
-      ],
-    },
-    // More sections...
-  ],
-}
-const relatedProducts = [
+const products = [
   {
     id: 1,
-    name: 'Zip Tote Basket',
-    color: 'White and black',
+    name: 'Nomad Tumbler',
     href: '#',
-    imageSrc: 'https://tailwindui.com/img/ecommerce-images/product-page-03-related-product-01.jpg',
-    imageAlt: 'Front of zip tote bag with white canvas, black canvas straps and handle, and black zipper pulls.',
-    price: '$140',
+    price: '$35.00',
+    color: 'White',
+    inStock: true,
+    imageSrc: 'https://tailwindui.com/img/ecommerce-images/shopping-cart-page-01-product-03.jpg',
+    imageAlt: 'Insulated bottle with white base and black snap lid.',
+  },
+  {
+    id: 2,
+    name: 'Basic Tee',
+    href: '#',
+    price: '$32.00',
+    color: 'Sienna',
+    inStock: true,
+    size: 'Large',
+    imageSrc: 'https://tailwindui.com/img/ecommerce-images/shopping-cart-page-01-product-01.jpg',
+    imageAlt: 'Front of men\'s Basic Tee in sienna.',
   },
   // More products...
+]
+const policies = [
+  {
+    name: 'Free returns',
+    imageSrc: 'https://tailwindui.com/img/ecommerce/icons/icon-returns-light.svg',
+    description: 'Not what you expected? Place it back in the parcel and attach the pre-paid postage stamp.',
+  },
+  {
+    name: 'Same day delivery',
+    imageSrc: 'https://tailwindui.com/img/ecommerce/icons/icon-calendar-light.svg',
+    description:
+      'We offer a delivery service that has never been done before. Checkout today and receive your products within hours.',
+  },
+  {
+    name: 'All year discount',
+    imageSrc: 'https://tailwindui.com/img/ecommerce/icons/icon-gift-card-light.svg',
+    description: 'Looking for a deal? You can use the code "ALLYEAR" at checkout and get money off all year round.',
+  },
+  {
+    name: 'For the planet',
+    imageSrc: 'https://tailwindui.com/img/ecommerce/icons/icon-planet-light.svg',
+    description: 'We’ve pledged 1% of sales to the preservation and restoration of the natural environment.',
+  },
 ]
 const footerNavigation = {
   products: [
@@ -308,8 +281,13 @@ const footerNavigation = {
   ],
 }
 
+const productStore = useProductStore()
+
+productStore.fetchAll()
+
+const cart = userCart()
+
 const open = ref(false)
-const selectedColor = ref(product.colors[0])
 </script>
 
 <template>
@@ -497,194 +475,191 @@ const selectedColor = ref(product.colors[0])
               </a>
 
               <!-- Cart -->
-              <div class="ml-4 flow-root lg:ml-6">
-                <CartsDisplay />
-                <!-- <a href="#" class="group -m-2 flex items-center p-2">
-                  <ShoppingBagIcon class="h-6 w-6 flex-shrink-0 text-gray-400 group-hover:text-gray-500" aria-hidden="true" />
-                  <span class="ml-2 text-sm font-medium text-gray-700 group-hover:text-gray-800">0</span>
-                  <span class="sr-only">items in cart, view bag</span>
-                </a> -->
-              </div>
+              <CartsDisplay />
             </div>
           </div>
         </div>
       </nav>
     </header>
 
-    <main class="mx-auto max-w-7xl sm:px-6 sm:pt-16 lg:px-8">
-      <div class="mx-auto max-w-2xl lg:max-w-none">
-        <!-- Product -->
-        <p>{{ product2 }}</p>
-        <div class="lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-8">
-          <img v-if="product2" :src="product2.cover_image_data" alt="Card Image" class="object-contain w-full h-64">
-          <!-- Image gallery -->
+    <main>
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="mx-auto max-w-4xl pt-16">
+          <h1 class="text-3xl font-bold tracking-tight text-gray-900">
+            Shopping Cart
+          </h1>
 
-          <!-- <TabGroup as="div" class="flex flex-col-reverse"> -->
-          <!-- Image selector -->
-          <!-- <div class="mx-auto mt-6 hidden w-full max-w-2xl sm:block lg:max-w-none">
-            <TabList class="grid grid-cols-4 gap-6">
-              <Tab v-for="image in product.images" :key="image.id" v-slot="{ selected }" class="relative flex h-24 cursor-pointer items-center justify-center rounded-md bg-white text-sm font-medium uppercase text-gray-900 hover:bg-gray-50 focus:outline-none focus:ring focus:ring-opacity-50 focus:ring-offset-4">
-                <span class="sr-only"> {{ image.name }} </span>
-                <span class="absolute inset-0 overflow-hidden rounded-md">
-                  <img :src="image.src" alt="" class="h-full w-full object-cover object-center">
-                </span>
-                <span class="pointer-events-none absolute inset-0 rounded-md ring-2 ring-offset-2" :class="[selected ? 'ring-indigo-500' : 'ring-transparent']" aria-hidden="true" />
-              </Tab>
-            </TabList> -->
-          <!-- </div> -->
-
-          <!-- <TabPanels class="aspect-w-1 aspect-h-1 w-full">
-            <TabPanel v-for="image in product.images" :key="image.id">
-              <img :src="image.src" :alt="image.alt" class="h-full w-full object-cover object-center sm:rounded-lg">
-            </TabPanel>
-          </TabPanels> -->
-          <!-- </TabGroup> -->
-
-          <!-- Product info -->
-          <div class="mt-10 px-4 sm:mt-16 sm:px-0 lg:mt-0">
-            <h1 v-if="product2" class="text-3xl font-bold tracking-tight text-gray-900">
-              {{ product2.name }}
-            </h1>
-
-            <div class="mt-3">
-              <h2 class="sr-only">
-                Product information
+          <form class="mt-12">
+            <section aria-labelledby="cart-heading">
+              <h2 id="cart-heading" class="sr-only">
+                Items in your shopping cart
               </h2>
-              <p v-if="product2" class="text-3xl tracking-tight text-gray-900">
-                {{ product2.price }}
-              </p>
-            </div>
 
-            <!-- Reviews -->
-            <div class="mt-3">
-              <h3 class="sr-only">
-                Reviews
-              </h3>
-              <div class="flex items-center">
-                <div class="flex items-center">
-                  <StarIcon v-for="rating in [0, 1, 2, 3, 4]" :key="rating" class="h-5 w-5 flex-shrink-0" :class="[product.rating > rating ? 'text-indigo-500' : 'text-gray-300']" aria-hidden="true" />
+              <p>{{ cart.cartItems }}</p>
+              <ul role="list" class="divide-y divide-gray-200 border-t border-b border-gray-200">
+                <li v-for="(product, productIdx) in cart.cartItems" :key="cart.id" class="flex py-6 sm:py-10">
+                  <div class="flex-shrink-0">
+                    <img :src="product.cover_image_data" :alt="product.imageAlt" class="h-24 w-24 rounded-lg object-cover object-center sm:h-32 sm:w-32">
+                  </div>
+
+                  <div class="relative ml-4 flex flex-1 flex-col justify-between sm:ml-6">
+                    <div>
+                      <div class="flex justify-between sm:grid sm:grid-cols-2">
+                        <div class="pr-6">
+                          <h3 class="text-sm">
+                            <a :href="product.href" class="font-medium text-gray-700 hover:text-gray-800">{{ product.name }}</a>
+                          </h3>
+                          <p class="mt-1 text-sm text-gray-500">
+                            {{ product.color }}
+                          </p>
+                          <p v-if="product.size" class="mt-1 text-sm text-gray-500">
+                            {{ product.size }}
+                          </p>
+                        </div>
+
+                        <p class="text-right text-sm font-medium text-gray-900">
+                          {{ product.price }}
+                        </p>
+                      </div>
+
+                      <div class="mt-4 flex items-center sm:absolute sm:top-0 sm:left-1/2 sm:mt-0 sm:block">
+                        <label :for="`quantity-${productIdx}`" class="sr-only">Quantity, {{ product.name }}</label>
+                        <select :id="`quantity-${productIdx}`" :name="`quantity-${productIdx}`" class="block max-w-full rounded-md border border-gray-300 py-1.5 text-left text-base font-medium leading-5 text-gray-700 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm">
+                          <option value="1">
+                            1
+                          </option>
+                          <option value="2">
+                            2
+                          </option>
+                          <option value="3">
+                            3
+                          </option>
+                          <option value="4">
+                            4
+                          </option>
+                          <option value="5">
+                            5
+                          </option>
+                          <option value="6">
+                            6
+                          </option>
+                          <option value="7">
+                            7
+                          </option>
+                          <option value="8">
+                            8
+                          </option>
+                        </select>
+
+                        <button type="button" class="ml-4 text-sm font-medium text-indigo-600 hover:text-indigo-500 sm:ml-0 sm:mt-3">
+                          <span>Remove</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <p class="mt-4 flex space-x-2 text-sm text-gray-700">
+                      <CheckIcon v-if="product.inStock" class="h-5 w-5 flex-shrink-0 text-green-500" aria-hidden="true" />
+                      <ClockIcon v-else class="h-5 w-5 flex-shrink-0 text-gray-300" aria-hidden="true" />
+                      <span>{{ product.inStock ? 'In stock' : `Ships in ${product.leadTime}` }}</span>
+                    </p>
+                  </div>
+                </li>
+              </ul>
+            </section>
+
+            <!-- Order summary -->
+            <section aria-labelledby="summary-heading" class="mt-10 sm:ml-32 sm:pl-6">
+              <div class="rounded-lg bg-gray-50 px-4 py-6 sm:p-6 lg:p-8">
+                <h2 id="summary-heading" class="sr-only">
+                  Order summary
+                </h2>
+
+                <div class="flow-root">
+                  <dl class="-my-4 divide-y divide-gray-200 text-sm">
+                    <div class="flex items-center justify-between py-4">
+                      <dt class="text-gray-600">
+                        Subtotal
+                      </dt>
+                      <dd class="font-medium text-gray-900">
+                        {{ cart.cartTotal }}
+                      </dd>
+                    </div>
+                    <div class="flex items-center justify-between py-4">
+                      <dt class="text-gray-600">
+                        Shipping
+                      </dt>
+                      <dd class="font-medium text-gray-900">
+                        $5.00
+                      </dd>
+                    </div>
+                    <div class="flex items-center justify-between py-4">
+                      <dt class="text-gray-600">
+                        Tax
+                      </dt>
+                      <dd class="font-medium text-gray-900">
+                        $8.32
+                      </dd>
+                    </div>
+                    <div class="flex items-center justify-between py-4">
+                      <dt class="text-base font-medium text-gray-900">
+                        Order total
+                      </dt>
+                      <dd class="text-base font-medium text-gray-900">
+                        $112.32
+                      </dd>
+                    </div>
+                  </dl>
                 </div>
-                <p class="sr-only">
-                  {{ product.rating }} out of 5 stars
+              </div>
+              <div class="mt-10">
+                <button type="submit" class="w-full rounded-md border border-transparent bg-indigo-600 py-3 px-4 text-base font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-50">
+                  Checkout
+                </button>
+              </div>
+
+              <div class="mt-6 text-center text-sm text-gray-500">
+                <p>
+                  or
+                  <a href="#" class="font-medium text-indigo-600 hover:text-indigo-500">
+                    Continue Shopping
+                    <span aria-hidden="true"> &rarr;</span>
+                  </a>
+                </p>
+              </div>
+            </section>
+          </form>
+        </div>
+      </div>
+
+      <!-- Policy grid -->
+      <section aria-labelledby="policies-heading" class="mt-24 border-t border-gray-200 bg-gray-50">
+        <h2 id="policies-heading" class="sr-only">
+          Our policies
+        </h2>
+
+        <div class="mx-auto max-w-7xl py-24 px-4 sm:px-6 sm:py-32 lg:px-8">
+          <div class="grid grid-cols-1 gap-y-12 sm:grid-cols-2 sm:gap-x-6 lg:grid-cols-4 lg:gap-x-8 lg:gap-y-0">
+            <div v-for="policy in policies" :key="policy.name" class="text-center md:flex md:items-start md:text-left lg:block lg:text-center">
+              <div class="md:flex-shrink-0">
+                <div class="flow-root">
+                  <img class="-my-1 mx-auto h-24 w-auto" :src="policy.imageSrc" alt="">
+                </div>
+              </div>
+              <div class="mt-6 md:mt-0 md:ml-4 lg:mt-6 lg:ml-0">
+                <h3 class="text-base font-medium text-gray-900">
+                  {{ policy.name }}
+                </h3>
+                <p class="mt-3 text-sm text-gray-500">
+                  {{ policy.description }}
                 </p>
               </div>
             </div>
-
-            <div class="mt-6">
-              <h3 class="sr-only">
-                Description
-              </h3>
-
-              <div class="space-y-6 text-base text-gray-700" v-html="product.description" />
-            </div>
-
-            <form class="mt-6">
-              <!-- Colors -->
-              <div>
-                <h3 class="text-sm text-gray-600">
-                  Color
-                </h3>
-
-                <RadioGroup v-model="selectedColor" class="mt-2">
-                  <RadioGroupLabel class="sr-only">
-                    Choose a color
-                  </RadioGroupLabel>
-                  <div class="flex items-center space-x-3">
-                    <RadioGroupOption v-for="color in product.colors" :key="color.name" v-slot="{ active, checked }" as="template" :value="color">
-                      <div class="-m-0.5 relative p-0.5 rounded-full flex items-center justify-center cursor-pointer focus:outline-none" :class="[color.selectedColor, active && checked ? 'ring ring-offset-1' : '', !active && checked ? 'ring-2' : '']">
-                        <RadioGroupLabel as="span" class="sr-only">
-                          {{ color.name }}
-                        </RadioGroupLabel>
-                        <span aria-hidden="true" class="h-8 w-8 border border-black border-opacity-10 rounded-full" :class="[color.bgColor]" />
-                      </div>
-                    </RadioGroupOption>
-                  </div>
-                </RadioGroup>
-              </div>
-
-              <div class="mt-10 flex">
-                <n-button
-                  class="btn btn-primary"
-                  strong
-                  secondary
-                  type="success"
-                  @click="cart.addToCart(product2)"
-                >
-                  Add to Cart
-                </n-button>
-
-                <button type="button" class="ml-4 flex items-center justify-center rounded-md py-3 px-3 text-gray-400 hover:bg-gray-100 hover:text-gray-500">
-                  <HeartIcon class="h-6 w-6 flex-shrink-0" aria-hidden="true" />
-                  <span class="sr-only">Add to favorites</span>
-                </button>
-              </div>
-            </form>
-
-            <section aria-labelledby="details-heading" class="mt-12">
-              <h2 id="details-heading" class="sr-only">
-                Additional details
-              </h2>
-
-              <div class="divide-y divide-gray-200 border-t">
-                <Disclosure v-for="detail in product.details" :key="detail.name" v-slot="{ open }" as="div">
-                  <h3>
-                    <DisclosureButton class="group relative flex w-full items-center justify-between py-6 text-left">
-                      <span class="text-sm font-medium" :class="[open ? 'text-indigo-600' : 'text-gray-900']">{{ detail.name }}</span>
-                      <span class="ml-6 flex items-center">
-                        <PlusIcon v-if="!open" class="block h-6 w-6 text-gray-400 group-hover:text-gray-500" aria-hidden="true" />
-                        <MinusIcon v-else class="block h-6 w-6 text-indigo-400 group-hover:text-indigo-500" aria-hidden="true" />
-                      </span>
-                    </DisclosureButton>
-                  </h3>
-                  <DisclosurePanel as="div" class="prose prose-sm pb-6">
-                    <ul role="list">
-                      <li v-for="item in detail.items" :key="item">
-                        {{ item }}
-                      </li>
-                    </ul>
-                  </DisclosurePanel>
-                </Disclosure>
-              </div>
-            </section>
           </div>
         </div>
-
-        <!-- <section aria-labelledby="related-heading" class="mt-10 border-t border-gray-200 py-16 px-4 sm:px-0">
-          <h2 id="related-heading" class="text-xl font-bold text-gray-900">
-            Customers also bought
-          </h2>
-
-          <div class="mt-8 grid grid-cols-1 gap-y-12 sm:grid-cols-2 sm:gap-x-6 lg:grid-cols-4 xl:gap-x-8">
-            <div v-for="product in relatedProducts" :key="product.id">
-              <div class="relative">
-                <div class="relative h-72 w-full overflow-hidden rounded-lg">
-                  <img :src="product.imageSrc" :alt="product.imageAlt" class="h-full w-full object-cover object-center">
-                </div>
-                <div class="relative mt-4">
-                  <h3 class="text-sm font-medium text-gray-900">
-                    {{ product.name }}
-                  </h3>
-                  <p class="mt-1 text-sm text-gray-500">
-                    {{ product.color }}
-                  </p>
-                </div>
-                <div class="absolute inset-x-0 top-0 flex h-72 items-end justify-end overflow-hidden rounded-lg p-4">
-                  <div aria-hidden="true" class="absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-black opacity-50" />
-                  <p class="relative text-lg font-semibold text-white">
-                    {{ product.price }}
-                  </p>
-                </div>
-              </div>
-              <div class="mt-6">
-                <a :href="product.href" class="relative flex items-center justify-center rounded-md border border-transparent bg-gray-100 py-2 px-8 text-sm font-medium text-gray-900 hover:bg-gray-200">Add to bag<span class="sr-only">, {{ product.name }}</span></a>
-              </div>
-            </div>
-          </div>
-        </section> -->
-      </div>
+      </section>
     </main>
 
-    <footer aria-labelledby="footer-heading" class="bg-white">
+    <footer aria-labelledby="footer-heading" class="bg-gray-50">
       <h2 id="footer-heading" class="sr-only">
         Footer
       </h2>

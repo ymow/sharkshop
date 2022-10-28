@@ -1,4 +1,4 @@
-import { ref, Ref } from 'vue'
+import { Ref, ref } from 'vue'
 import { defineStore } from 'pinia'
 
 import { Product } from '@/store/products'
@@ -12,12 +12,12 @@ export const userCart = defineStore('cart', {
     cartItems: ref([]),
   }),
   actions: {
-    addToCart(item) {
+    addToCart(item: Product) {
       this.cartItems.push(item)
     },
   },
   getters: {
-    cartTotal: (state) =>
-      state.cartItems.map((item) => item.price).reduce((a, c) => a + c, 0),
+    cartTotal: state =>
+      state.cartItems.map(item => item.price).reduce((a, c) => a + c, 0),
   },
 })

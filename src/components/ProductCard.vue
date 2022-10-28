@@ -14,7 +14,11 @@ const cart = userCart()
   <n-card :title="product.name">
     <template #cover>
       <NuxtLink class="link link-hover" :to="`/product/${product.id}`">
-        <img :src="product.cover_image_data" alt="Card Image" class="object-contain w-full h-64">
+        <img
+          :src="product.cover_image_data"
+          alt="Card Image"
+          class="object-contain w-full h-64"
+        >
       </NuxtLink>
     </template>
     <div class="card-body">
