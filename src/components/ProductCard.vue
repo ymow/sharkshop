@@ -24,7 +24,7 @@ const cart = userCart()
     <div class="card-body">
       <p>{{ toCurrency(product.price) }}</p>
       <div class="justify-end card-actions">
-        <n-button
+        <!-- <n-button
           class="btn btn-primary"
           strong
           secondary
@@ -32,7 +32,7 @@ const cart = userCart()
           @click="cart.addToCart(product)"
         >
           Add to Cart
-        </n-button>
+        </n-button> -->
       </div>
     </div>
   </n-card>
