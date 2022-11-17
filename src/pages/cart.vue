@@ -605,7 +605,7 @@ const open = ref(false)
                         Order total
                       </dt>
                       <dd class="text-base font-medium text-gray-900">
-                        $112.32
+                        {{ `$${parseFloat(cart.cartTotal) + 5 + 8.32}` }}
                       </dd>
                     </div>
                   </dl>

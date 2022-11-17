@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, reactive, ref, toRaw, toRefs } from 'vue'
 import {
   Dialog,
   DialogPanel,
@@ -36,7 +36,8 @@ import { StarIcon } from '@heroicons/vue/20/solid'
 import { toCurrency } from '@/utils/utils'
 import { useProductStore } from '@/store/products'
 import type { Product } from '@/store/products'
-import { useCartStore, userCart } from '@/store/cart'
+import type { Order, OrderItem } from '@/types/order'
+import { userCart } from '@/store/cart'
 
 const productStore = useProductStore()
 
@@ -45,7 +46,108 @@ productStore.fetchAll()
 const cart = userCart()
 const productID = useRoute().params.id.toString()
 
-const product2 = computed<Product>(() => productStore.items[productID])
+const product_page = computed<Product>(() => productStore.items[productID])
+
+const { createItems, updateItem } = useDirectusItems()
+const newOrderItemUpdeted = ref(0)
+
+const forceRerender = () => {
+  newOrderItemUpdeted.value += 1
+}
+
+const createOrder: Order[] = async (item) => {
+  const orderItems: OrderItem[] = [
+    {
+      product_id: item.id,
+      product_name: item.name,
+      price: item.price,
+      quantity: item.quantity,
+      spec: 'def1234',
+      sku: 'abc1234',
+      delivery_option: 'pick_up',
+    },
+  ]
+
+  try {
+    const items: Order[] = [
+      {
+        subtotal: 789,
+        shipping: 456,
+        total: '$ 2502',
+        delivery_option: 'express',
+        hide: false,
+        items: orderItems,
+      },
+    ]
+    const currentOrder = await createItems<Order>({ collection: 'orders', items })
+    await forceRerender()
+  }
+  catch (e) {}
+}
+
+const updateOrder: Order[] = async (item: Product, orderId: string, originalItems) => {
+  const newOrderItems: OrderItem
+    = {
+      product_id: item.id,
+      product_name: item.name,
+      price: item.price,
+      quantity: 3,
+      spec: item.specs,
+      sku: '',
+      delivery_option: 'fly_away',
+    }
+
+  // merge newOrderItems to originalItems
+  originalItems.push(newOrderItems)
+
+  try {
+    const items2: Order[] = [
+      {
+        id: orderId,
+        subtotal: 1011,
+        shipping: 201,
+        total: cart.cartTotal.toString(),
+        delivery_option: 'express',
+        hide: false,
+        items: originalItems,
+      },
+    ]
+    const originalOrder = await updateItem<Order>({ collection: 'orders', id: orderId, item: items2[0] })
+    await forceRerender()
+  }
+  catch (e) {
+  }
+}
+
+const currentCart = ref(null)
+const cartCounter = computed(() => currentCart.value?.cartCounter)
+
+function addCartOnClick(item) {
+  const myOrder = toRaw(cart.currentCart)
+  const newOrderItems: OrderItem
+    = {
+      product_id: item.id,
+      product_name: item.name,
+      price: item.price,
+      quantity: item.quantity,
+      spec: 'def1234',
+      sku: 'abc1234',
+      delivery_option: 'pick_up',
+    }
+
+  if (myOrder.length !== 0) {
+  // updateOrder
+    updateOrder(item, myOrder.id?.toString(), myOrder.items)
+    console.log('updateOrder')
+  }
+  else {
+  // createOrder
+    console.log('createOrder')
+    createOrder(item)
+  }
+}
+
+const prodcutPage = ref(product_page)
 
 const navigation = {
   categories: [
@@ -56,20 +158,25 @@ const navigation = {
         {
           name: 'New Arrivals',
           href: '#',
-          imageSrc: 'https://tailwindui.com/img/ecommerce-images/mega-menu-category-01.jpg',
+          imageSrc:
+            'https://tailwindui.com/img/ecommerce-images/mega-menu-category-01.jpg',
           imageAlt: 'Models sitting back to back, wearing Basic Tee in black and bone.',
         },
         {
           name: 'Basic Tees',
           href: '#',
-          imageSrc: 'https://tailwindui.com/img/ecommerce-images/mega-menu-category-02.jpg',
-          imageAlt: 'Close up of Basic Tee fall bundle with off-white, ochre, olive, and black tees.',
+          imageSrc:
+            'https://tailwindui.com/img/ecommerce-images/mega-menu-category-02.jpg',
+          imageAlt:
+            'Close up of Basic Tee fall bundle with off-white, ochre, olive, and black tees.',
         },
         {
           name: 'Accessories',
           href: '#',
-          imageSrc: 'https://tailwindui.com/img/ecommerce-images/mega-menu-category-03.jpg',
-          imageAlt: 'Model wearing minimalist watch with black wristband and white watch face.',
+          imageSrc:
+            'https://tailwindui.com/img/ecommerce-images/mega-menu-category-03.jpg',
+          imageAlt:
+            'Model wearing minimalist watch with black wristband and white watch face.',
         },
       ],
       sections: [
@@ -146,22 +253,26 @@ const navigation = {
         {
           name: 'Accessories',
           href: '#',
-          imageSrc: 'https://tailwindui.com/img/ecommerce-images/home-page-03-category-01.jpg',
+          imageSrc:
+            'https://tailwindui.com/img/ecommerce-images/home-page-03-category-01.jpg',
           imageAlt:
-              'Wooden shelf with gray and olive drab green baseball caps, next to wooden clothes hanger with sweaters.',
+            'Wooden shelf with gray and olive drab green baseball caps, next to wooden clothes hanger with sweaters.',
         },
         {
           name: 'New Arrivals',
           href: '#',
-          imageSrc: 'https://tailwindui.com/img/ecommerce-images/product-page-04-detail-product-shot-01.jpg',
-          imageAlt: 'Drawstring top with elastic loop closure and textured interior padding.',
+          imageSrc:
+            'https://tailwindui.com/img/ecommerce-images/product-page-04-detail-product-shot-01.jpg',
+          imageAlt:
+            'Drawstring top with elastic loop closure and textured interior padding.',
         },
         {
           name: 'Artwork Tees',
           href: '#',
-          imageSrc: 'https://tailwindui.com/img/ecommerce-images/category-page-02-image-card-06.jpg',
+          imageSrc:
+            'https://tailwindui.com/img/ecommerce-images/category-page-02-image-card-06.jpg',
           imageAlt:
-              'Three shirts in gray, white, and blue arranged on table with same line drawing of hands and shapes overlapping on front of shirt.',
+            'Three shirts in gray, white, and blue arranged on table with same line drawing of hands and shapes overlapping on front of shirt.',
         },
       ],
       sections: [
@@ -275,8 +386,10 @@ const relatedProducts = [
     name: 'Zip Tote Basket',
     color: 'White and black',
     href: '#',
-    imageSrc: 'https://tailwindui.com/img/ecommerce-images/product-page-03-related-product-01.jpg',
-    imageAlt: 'Front of zip tote bag with white canvas, black canvas straps and handle, and black zipper pulls.',
+    imageSrc:
+      'https://tailwindui.com/img/ecommerce-images/product-page-03-related-product-01.jpg',
+    imageAlt:
+      'Front of zip tote bag with white canvas, black canvas straps and handle, and black zipper pulls.',
     price: '$140',
   },
   // More products...
@@ -317,15 +430,37 @@ const selectedColor = ref(product.colors[0])
     <!-- Mobile menu -->
     <TransitionRoot as="template" :show="open">
       <Dialog as="div" class="relative z-40 lg:hidden" @close="open = false">
-        <TransitionChild as="template" enter="transition-opacity ease-linear duration-300" enter-from="opacity-0" enter-to="opacity-100" leave="transition-opacity ease-linear duration-300" leave-from="opacity-100" leave-to="opacity-0">
+        <TransitionChild
+          as="template"
+          enter="transition-opacity ease-linear duration-300"
+          enter-from="opacity-0"
+          enter-to="opacity-100"
+          leave="transition-opacity ease-linear duration-300"
+          leave-from="opacity-100"
+          leave-to="opacity-0"
+        >
           <div class="fixed inset-0 bg-black bg-opacity-25" />
         </TransitionChild>
 
         <div class="fixed inset-0 z-40 flex">
-          <TransitionChild as="template" enter="transition ease-in-out duration-300 transform" enter-from="-translate-x-full" enter-to="translate-x-0" leave="transition ease-in-out duration-300 transform" leave-from="translate-x-0" leave-to="-translate-x-full">
-            <DialogPanel class="relative flex w-full max-w-xs flex-col overflow-y-auto bg-white pb-12 shadow-xl">
+          <TransitionChild
+            as="template"
+            enter="transition ease-in-out duration-300 transform"
+            enter-from="-translate-x-full"
+            enter-to="translate-x-0"
+            leave="transition ease-in-out duration-300 transform"
+            leave-from="translate-x-0"
+            leave-to="-translate-x-full"
+          >
+            <DialogPanel
+              class="relative flex w-full max-w-xs flex-col overflow-y-auto bg-white pb-12 shadow-xl"
+            >
               <div class="flex px-4 pt-5 pb-2">
-                <button type="button" class="-m-2 inline-flex items-center justify-center rounded-md p-2 text-gray-400" @click="open = false">
+                <button
+                  type="button"
+                  class="-m-2 inline-flex items-center justify-center rounded-md p-2 text-gray-400"
+                  @click="open = false"
+                >
                   <span class="sr-only">Close menu</span>
                   <XMarkIcon class="h-6 w-6" aria-hidden="true" />
                 </button>
@@ -335,18 +470,42 @@ const selectedColor = ref(product.colors[0])
               <TabGroup as="div" class="mt-2">
                 <div class="border-b border-gray-200">
                   <TabList class="-mb-px flex space-x-8 px-4">
-                    <Tab v-for="category in navigation.categories" :key="category.name" v-slot="{ selected }" as="template">
-                      <button class="flex-1 whitespace-nowrap border-b-2 py-4 px-1 text-base font-medium" :class="[selected ? 'text-indigo-600 border-indigo-600' : 'text-gray-900 border-transparent']">
+                    <Tab
+                      v-for="category in navigation.categories"
+                      :key="category.name"
+                      v-slot="{ selected }"
+                      as="template"
+                    >
+                      <button
+                        class="flex-1 whitespace-nowrap border-b-2 py-4 px-1 text-base font-medium"
+                        :class="[
+                          selected
+                            ? 'text-indigo-600 border-indigo-600'
+                            : 'text-gray-900 border-transparent',
+                        ]"
+                      >
                         {{ category.name }}
                       </button>
                     </Tab>
                   </TabList>
                 </div>
                 <TabPanels as="template">
-                  <TabPanel v-for="category in navigation.categories" :key="category.name" class="space-y-10 px-4 pt-10 pb-8">
+                  <TabPanel
+                    v-for="category in navigation.categories"
+                    :key="category.name"
+                    class="space-y-10 px-4 pt-10 pb-8"
+                  >
                     <div class="space-y-4">
-                      <div v-for="(item, itemIdx) in category.featured" :key="itemIdx" class="group aspect-w-1 aspect-h-1 relative overflow-hidden rounded-md bg-gray-100">
-                        <img :src="item.imageSrc" :alt="item.imageAlt" class="object-cover object-center group-hover:opacity-75">
+                      <div
+                        v-for="(item, itemIdx) in category.featured"
+                        :key="itemIdx"
+                        class="group aspect-w-1 aspect-h-1 relative overflow-hidden rounded-md bg-gray-100"
+                      >
+                        <img
+                          :src="item.imageSrc"
+                          :alt="item.imageAlt"
+                          class="object-cover object-center group-hover:opacity-75"
+                        >
                         <div class="flex flex-col justify-end">
                           <div class="bg-white bg-opacity-60 p-4 text-base sm:text-sm">
                             <a :href="item.href" class="font-medium text-gray-900">
@@ -360,14 +519,31 @@ const selectedColor = ref(product.colors[0])
                         </div>
                       </div>
                     </div>
-                    <div v-for="(column, columnIdx) in category.sections" :key="columnIdx" class="space-y-10">
+                    <div
+                      v-for="(column, columnIdx) in category.sections"
+                      :key="columnIdx"
+                      class="space-y-10"
+                    >
                       <div v-for="section in column" :key="section.name">
-                        <p :id="`${category.id}-${section.id}-heading-mobile`" class="font-medium text-gray-900">
+                        <p
+                          :id="`${category.id}-${section.id}-heading-mobile`"
+                          class="font-medium text-gray-900"
+                        >
                           {{ section.name }}
                         </p>
-                        <ul role="list" :aria-labelledby="`${category.id}-${section.id}-heading-mobile`" class="mt-6 flex flex-col space-y-6">
-                          <li v-for="item in section.items" :key="item.name" class="flow-root">
-                            <a :href="item.href" class="-m-2 block p-2 text-gray-500">{{ item.name }}</a>
+                        <ul
+                          role="list"
+                          :aria-labelledby="`${category.id}-${section.id}-heading-mobile`"
+                          class="mt-6 flex flex-col space-y-6"
+                        >
+                          <li
+                            v-for="item in section.items"
+                            :key="item.name"
+                            class="flow-root"
+                          >
+                            <a :href="item.href" class="-m-2 block p-2 text-gray-500">{{
+                              item.name
+                            }}</a>
                           </li>
                         </ul>
                       </div>
@@ -378,13 +554,19 @@ const selectedColor = ref(product.colors[0])
 
               <div class="space-y-6 border-t border-gray-200 py-6 px-4">
                 <div v-for="page in navigation.pages" :key="page.name" class="flow-root">
-                  <a :href="page.href" class="-m-2 block p-2 font-medium text-gray-900">{{ page.name }}</a>
+                  <a :href="page.href" class="-m-2 block p-2 font-medium text-gray-900">{{
+                    page.name
+                  }}</a>
                 </div>
               </div>
 
               <div class="border-t border-gray-200 py-6 px-4">
                 <a href="#" class="-m-2 flex items-center p-2">
-                  <img src="https://tailwindui.com/img/flags/flag-canada.svg" alt="" class="block h-auto w-5 flex-shrink-0">
+                  <img
+                    src="https://tailwindui.com/img/flags/flag-canada.svg"
+                    alt=""
+                    class="block h-auto w-5 flex-shrink-0"
+                  >
                   <span class="ml-3 block text-base font-medium text-gray-900">CAD</span>
                   <span class="sr-only">, change currency</span>
                 </a>
@@ -400,7 +582,11 @@ const selectedColor = ref(product.colors[0])
         <div class="border-b border-gray-200">
           <div class="flex h-16 items-center justify-between">
             <div class="flex flex-1 items-center lg:hidden">
-              <button type="button" class="-ml-2 rounded-md bg-white p-2 text-gray-400" @click="open = true">
+              <button
+                type="button"
+                class="-ml-2 rounded-md bg-white p-2 text-gray-400"
+                @click="open = true"
+              >
                 <span class="sr-only">Open menu</span>
                 <Bars3Icon class="h-6 w-6" aria-hidden="true" />
               </button>
@@ -414,47 +600,105 @@ const selectedColor = ref(product.colors[0])
             <!-- Flyout menus -->
             <PopoverGroup class="hidden lg:block lg:flex-1 lg:self-stretch">
               <div class="flex h-full space-x-8">
-                <Popover v-for="category in navigation.categories" :key="category.name" v-slot="{ open }" class="flex">
+                <Popover
+                  v-for="category in navigation.categories"
+                  :key="category.name"
+                  v-slot="{ open }"
+                  class="flex"
+                >
                   <div class="relative flex">
-                    <PopoverButton class="relative z-10 flex items-center justify-center text-sm font-medium transition-colors duration-200 ease-out" :class="[open ? 'text-indigo-600' : 'text-gray-700 hover:text-gray-800']">
+                    <PopoverButton
+                      class="relative z-10 flex items-center justify-center text-sm font-medium transition-colors duration-200 ease-out"
+                      :class="[
+                        open ? 'text-indigo-600' : 'text-gray-700 hover:text-gray-800',
+                      ]"
+                    >
                       {{ category.name }}
-                      <span class="absolute inset-x-0 bottom-0 h-0.5 transition-colors duration-200 ease-out sm:mt-5 sm:translate-y-px sm:transform" :class="[open ? 'bg-indigo-600' : '']" aria-hidden="true" />
+                      <span
+                        class="absolute inset-x-0 bottom-0 h-0.5 transition-colors duration-200 ease-out sm:mt-5 sm:translate-y-px sm:transform"
+                        :class="[open ? 'bg-indigo-600' : '']"
+                        aria-hidden="true"
+                      />
                     </PopoverButton>
                   </div>
 
-                  <transition enter-active-class="transition ease-out duration-200" enter-from-class="opacity-0" enter-to-class="opacity-100" leave-active-class="transition ease-in duration-150" leave-from-class="opacity-100" leave-to-class="opacity-0">
+                  <transition
+                    enter-active-class="transition ease-out duration-200"
+                    enter-from-class="opacity-0"
+                    enter-to-class="opacity-100"
+                    leave-active-class="transition ease-in duration-150"
+                    leave-from-class="opacity-100"
+                    leave-to-class="opacity-0"
+                  >
                     <PopoverPanel class="absolute inset-x-0 top-full z-10">
                       <!-- Presentational element used to render the bottom shadow, if we put the shadow on the actual panel it pokes out the top, so we use this shorter element to hide the top of the shadow -->
-                      <div class="absolute inset-0 top-1/2 bg-white shadow" aria-hidden="true" />
+                      <div
+                        class="absolute inset-0 top-1/2 bg-white shadow"
+                        aria-hidden="true"
+                      />
 
                       <div class="relative bg-white">
                         <div class="mx-auto max-w-7xl px-8">
                           <div class="grid grid-cols-2 gap-y-10 gap-x-8 py-16">
                             <div class="grid grid-cols-2 grid-rows-1 gap-8 text-sm">
-                              <div v-for="(item, itemIdx) in category.featured" :key="item.name" class="group relative aspect-w-1 aspect-h-1 rounded-md bg-gray-100 overflow-hidden" :class="[itemIdx === 0 ? 'col-span-2 aspect-w-2' : '']">
-                                <img :src="item.imageSrc" :alt="item.imageAlt" class="object-cover object-center group-hover:opacity-75">
+                              <div
+                                v-for="(item, itemIdx) in category.featured"
+                                :key="item.name"
+                                class="group relative aspect-w-1 aspect-h-1 rounded-md bg-gray-100 overflow-hidden"
+                                :class="[itemIdx === 0 ? 'col-span-2 aspect-w-2' : '']"
+                              >
+                                <img
+                                  :src="item.imageSrc"
+                                  :alt="item.imageAlt"
+                                  class="object-cover object-center group-hover:opacity-75"
+                                >
                                 <div class="flex flex-col justify-end">
                                   <div class="bg-white bg-opacity-60 p-4 text-sm">
-                                    <a :href="item.href" class="font-medium text-gray-900">
+                                    <a
+                                      :href="item.href"
+                                      class="font-medium text-gray-900"
+                                    >
                                       <span class="absolute inset-0" aria-hidden="true" />
                                       {{ item.name }}
                                     </a>
-                                    <p aria-hidden="true" class="mt-0.5 text-gray-700 sm:mt-1">
+                                    <p
+                                      aria-hidden="true"
+                                      class="mt-0.5 text-gray-700 sm:mt-1"
+                                    >
                                       Shop now
                                     </p>
                                   </div>
                                 </div>
                               </div>
                             </div>
-                            <div class="grid grid-cols-3 gap-y-10 gap-x-8 text-sm text-gray-500">
-                              <div v-for="(column, columnIdx) in category.sections" :key="columnIdx" class="space-y-10">
+                            <div
+                              class="grid grid-cols-3 gap-y-10 gap-x-8 text-sm text-gray-500"
+                            >
+                              <div
+                                v-for="(column, columnIdx) in category.sections"
+                                :key="columnIdx"
+                                class="space-y-10"
+                              >
                                 <div v-for="section in column" :key="section.name">
-                                  <p :id="`${category.id}-${section.id}-heading`" class="font-medium text-gray-900">
+                                  <p
+                                    :id="`${category.id}-${section.id}-heading`"
+                                    class="font-medium text-gray-900"
+                                  >
                                     {{ section.name }}
                                   </p>
-                                  <ul role="list" :aria-labelledby="`${category.id}-${section.id}-heading`" class="mt-4 space-y-4">
-                                    <li v-for="item in section.items" :key="item.name" class="flex">
-                                      <a :href="item.href" class="hover:text-gray-800">{{ item.name }}</a>
+                                  <ul
+                                    role="list"
+                                    :aria-labelledby="`${category.id}-${section.id}-heading`"
+                                    class="mt-4 space-y-4"
+                                  >
+                                    <li
+                                      v-for="item in section.items"
+                                      :key="item.name"
+                                      class="flex"
+                                    >
+                                      <a :href="item.href" class="hover:text-gray-800">{{
+                                        item.name
+                                      }}</a>
                                     </li>
                                   </ul>
                                 </div>
@@ -467,25 +711,44 @@ const selectedColor = ref(product.colors[0])
                   </transition>
                 </Popover>
 
-                <a v-for="page in navigation.pages" :key="page.name" :href="page.href" class="flex items-center text-sm font-medium text-gray-700 hover:text-gray-800">{{ page.name }}</a>
+                <a
+                  v-for="page in navigation.pages"
+                  :key="page.name"
+                  :href="page.href"
+                  class="flex items-center text-sm font-medium text-gray-700 hover:text-gray-800"
+                >{{ page.name }}</a>
               </div>
             </PopoverGroup>
 
             <!-- Logo -->
             <a href="#" class="flex">
               <span class="sr-only">Your Company</span>
-              <img class="h-8 w-auto" src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600" alt="">
+              <img
+                class="h-8 w-auto"
+                src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600"
+                alt=""
+              >
             </a>
 
             <div class="flex flex-1 items-center justify-end">
-              <a href="#" class="hidden text-gray-700 hover:text-gray-800 lg:flex lg:items-center">
-                <img src="https://tailwindui.com/img/flags/flag-canada.svg" alt="" class="block h-auto w-5 flex-shrink-0">
+              <a
+                href="#"
+                class="hidden text-gray-700 hover:text-gray-800 lg:flex lg:items-center"
+              >
+                <img
+                  src="https://tailwindui.com/img/flags/flag-canada.svg"
+                  alt=""
+                  class="block h-auto w-5 flex-shrink-0"
+                >
                 <span class="ml-3 block text-sm font-medium">CAD</span>
                 <span class="sr-only">, change currency</span>
               </a>
 
               <!-- Search -->
-              <a href="#" class="ml-6 hidden p-2 text-gray-400 hover:text-gray-500 lg:block">
+              <a
+                href="#"
+                class="ml-6 hidden p-2 text-gray-400 hover:text-gray-500 lg:block"
+              >
                 <span class="sr-only">Search</span>
                 <MagnifyingGlassIcon class="h-6 w-6" aria-hidden="true" />
               </a>
@@ -498,12 +761,13 @@ const selectedColor = ref(product.colors[0])
 
               <!-- Cart -->
               <div class="ml-4 flow-root lg:ml-6">
-                <CartsDisplay />
+                <CartsDisplay ref="currentCart" :key="newOrderItemUpdeted" />
                 <!-- <a href="#" class="group -m-2 flex items-center p-2">
                   <ShoppingBagIcon class="h-6 w-6 flex-shrink-0 text-gray-400 group-hover:text-gray-500" aria-hidden="true" />
                   <span class="ml-2 text-sm font-medium text-gray-700 group-hover:text-gray-800">0</span>
                   <span class="sr-only">items in cart, view bag</span>
                 </a> -->
+                <!-- <p>{{ cartCounter }}</p> -->
               </div>
             </div>
           </div>
@@ -514,9 +778,14 @@ const selectedColor = ref(product.colors[0])
     <main class="mx-auto max-w-7xl sm:px-6 sm:pt-16 lg:px-8">
       <div class="mx-auto max-w-2xl lg:max-w-none">
         <!-- Product -->
-        <p>{{ product2 }}</p>
+        <p> {{ toRaw() }}</p>
         <div class="lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-8">
-          <img v-if="product2" :src="product2.cover_image_data" alt="Card Image" class="object-contain w-full h-64">
+          <img
+            v-if="product_page"
+            :src="product_page.cover_image_data"
+            alt="Card Image"
+            class="object-contain w-full h-64"
+          >
           <!-- Image gallery -->
 
           <!-- <TabGroup as="div" class="flex flex-col-reverse"> -->
@@ -542,16 +811,16 @@ const selectedColor = ref(product.colors[0])
 
           <!-- Product info -->
           <div class="mt-10 px-4 sm:mt-16 sm:px-0 lg:mt-0">
-            <h1 v-if="product2" class="text-3xl font-bold tracking-tight text-gray-900">
-              {{ product2.name }}
+            <h1 v-if="product_page" class="text-3xl font-bold tracking-tight text-gray-900">
+              {{ product_page.name }}
             </h1>
 
             <div class="mt-3">
               <h2 class="sr-only">
                 Product information
               </h2>
-              <p v-if="product2" class="text-3xl tracking-tight text-gray-900">
-                {{ product2.price }}
+              <p v-if="product_page" class="text-3xl tracking-tight text-gray-900">
+                {{ product_page.price }}
               </p>
             </div>
 
@@ -562,7 +831,15 @@ const selectedColor = ref(product.colors[0])
               </h3>
               <div class="flex items-center">
                 <div class="flex items-center">
-                  <StarIcon v-for="rating in [0, 1, 2, 3, 4]" :key="rating" class="h-5 w-5 flex-shrink-0" :class="[product.rating > rating ? 'text-indigo-500' : 'text-gray-300']" aria-hidden="true" />
+                  <StarIcon
+                    v-for="rating in [0, 1, 2, 3, 4]"
+                    :key="rating"
+                    class="h-5 w-5 flex-shrink-0"
+                    :class="[
+                      product.rating > rating ? 'text-indigo-500' : 'text-gray-300',
+                    ]"
+                    aria-hidden="true"
+                  />
                 </div>
                 <p class="sr-only">
                   {{ product.rating }} out of 5 stars
@@ -575,7 +852,10 @@ const selectedColor = ref(product.colors[0])
                 Description
               </h3>
 
-              <div class="space-y-6 text-base text-gray-700" v-html="product.description" />
+              <div
+                class="space-y-6 text-base text-gray-700"
+                v-html="product.description"
+              />
             </div>
 
             <form class="mt-6">
@@ -590,12 +870,29 @@ const selectedColor = ref(product.colors[0])
                     Choose a color
                   </RadioGroupLabel>
                   <div class="flex items-center space-x-3">
-                    <RadioGroupOption v-for="color in product.colors" :key="color.name" v-slot="{ active, checked }" as="template" :value="color">
-                      <div class="-m-0.5 relative p-0.5 rounded-full flex items-center justify-center cursor-pointer focus:outline-none" :class="[color.selectedColor, active && checked ? 'ring ring-offset-1' : '', !active && checked ? 'ring-2' : '']">
+                    <RadioGroupOption
+                      v-for="color in product.colors"
+                      :key="color.name"
+                      v-slot="{ active, checked }"
+                      as="template"
+                      :value="color"
+                    >
+                      <div
+                        class="-m-0.5 relative p-0.5 rounded-full flex items-center justify-center cursor-pointer focus:outline-none"
+                        :class="[
+                          color.selectedColor,
+                          active && checked ? 'ring ring-offset-1' : '',
+                          !active && checked ? 'ring-2' : '',
+                        ]"
+                      >
                         <RadioGroupLabel as="span" class="sr-only">
                           {{ color.name }}
                         </RadioGroupLabel>
-                        <span aria-hidden="true" class="h-8 w-8 border border-black border-opacity-10 rounded-full" :class="[color.bgColor]" />
+                        <span
+                          aria-hidden="true"
+                          class="h-8 w-8 border border-black border-opacity-10 rounded-full"
+                          :class="[color.bgColor]"
+                        />
                       </div>
                     </RadioGroupOption>
                   </div>
@@ -608,12 +905,15 @@ const selectedColor = ref(product.colors[0])
                   strong
                   secondary
                   type="success"
-                  @click="cart.addToCart(product2)"
+                  @click="addCartOnClick(product_page)"
                 >
                   Add to Cart
                 </n-button>
 
-                <button type="button" class="ml-4 flex items-center justify-center rounded-md py-3 px-3 text-gray-400 hover:bg-gray-100 hover:text-gray-500">
+                <button
+                  type="button"
+                  class="ml-4 flex items-center justify-center rounded-md py-3 px-3 text-gray-400 hover:bg-gray-100 hover:text-gray-500"
+                >
                   <HeartIcon class="h-6 w-6 flex-shrink-0" aria-hidden="true" />
                   <span class="sr-only">Add to favorites</span>
                 </button>
@@ -626,13 +926,31 @@ const selectedColor = ref(product.colors[0])
               </h2>
 
               <div class="divide-y divide-gray-200 border-t">
-                <Disclosure v-for="detail in product.details" :key="detail.name" v-slot="{ open }" as="div">
+                <Disclosure
+                  v-for="detail in product.details"
+                  :key="detail.name"
+                  v-slot="{ open }"
+                  as="div"
+                >
                   <h3>
-                    <DisclosureButton class="group relative flex w-full items-center justify-between py-6 text-left">
-                      <span class="text-sm font-medium" :class="[open ? 'text-indigo-600' : 'text-gray-900']">{{ detail.name }}</span>
+                    <DisclosureButton
+                      class="group relative flex w-full items-center justify-between py-6 text-left"
+                    >
+                      <span
+                        class="text-sm font-medium"
+                        :class="[open ? 'text-indigo-600' : 'text-gray-900']"
+                      >{{ detail.name }}</span>
                       <span class="ml-6 flex items-center">
-                        <PlusIcon v-if="!open" class="block h-6 w-6 text-gray-400 group-hover:text-gray-500" aria-hidden="true" />
-                        <MinusIcon v-else class="block h-6 w-6 text-indigo-400 group-hover:text-indigo-500" aria-hidden="true" />
+                        <PlusIcon
+                          v-if="!open"
+                          class="block h-6 w-6 text-gray-400 group-hover:text-gray-500"
+                          aria-hidden="true"
+                        />
+                        <MinusIcon
+                          v-else
+                          class="block h-6 w-6 text-indigo-400 group-hover:text-indigo-500"
+                          aria-hidden="true"
+                        />
                       </span>
                     </DisclosureButton>
                   </h3>
@@ -690,22 +1008,38 @@ const selectedColor = ref(product.colors[0])
       </h2>
       <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div class="border-t border-gray-200 py-20">
-          <div class="grid grid-cols-1 md:grid-flow-col md:auto-rows-min md:grid-cols-12 md:gap-x-8 md:gap-y-16">
+          <div
+            class="grid grid-cols-1 md:grid-flow-col md:auto-rows-min md:grid-cols-12 md:gap-x-8 md:gap-y-16"
+          >
             <!-- Image section -->
             <div class="col-span-1 md:col-span-2 lg:col-start-1 lg:row-start-1">
-              <img src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600" alt="" class="h-8 w-auto">
+              <img
+                src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600"
+                alt=""
+                class="h-8 w-auto"
+              >
             </div>
 
             <!-- Sitemap sections -->
-            <div class="col-span-6 mt-10 grid grid-cols-2 gap-8 sm:grid-cols-3 md:col-span-8 md:col-start-3 md:row-start-1 md:mt-0 lg:col-span-6 lg:col-start-2">
-              <div class="grid grid-cols-1 gap-y-12 sm:col-span-2 sm:grid-cols-2 sm:gap-x-8">
+            <div
+              class="col-span-6 mt-10 grid grid-cols-2 gap-8 sm:grid-cols-3 md:col-span-8 md:col-start-3 md:row-start-1 md:mt-0 lg:col-span-6 lg:col-start-2"
+            >
+              <div
+                class="grid grid-cols-1 gap-y-12 sm:col-span-2 sm:grid-cols-2 sm:gap-x-8"
+              >
                 <div>
                   <h3 class="text-sm font-medium text-gray-900">
                     Products
                   </h3>
                   <ul role="list" class="mt-6 space-y-6">
-                    <li v-for="item in footerNavigation.products" :key="item.name" class="text-sm">
-                      <a :href="item.href" class="text-gray-500 hover:text-gray-600">{{ item.name }}</a>
+                    <li
+                      v-for="item in footerNavigation.products"
+                      :key="item.name"
+                      class="text-sm"
+                    >
+                      <a :href="item.href" class="text-gray-500 hover:text-gray-600">{{
+                        item.name
+                      }}</a>
                     </li>
                   </ul>
                 </div>
@@ -714,8 +1048,14 @@ const selectedColor = ref(product.colors[0])
                     Company
                   </h3>
                   <ul role="list" class="mt-6 space-y-6">
-                    <li v-for="item in footerNavigation.company" :key="item.name" class="text-sm">
-                      <a :href="item.href" class="text-gray-500 hover:text-gray-600">{{ item.name }}</a>
+                    <li
+                      v-for="item in footerNavigation.company"
+                      :key="item.name"
+                      class="text-sm"
+                    >
+                      <a :href="item.href" class="text-gray-500 hover:text-gray-600">{{
+                        item.name
+                      }}</a>
                     </li>
                   </ul>
                 </div>
@@ -725,15 +1065,23 @@ const selectedColor = ref(product.colors[0])
                   Customer Service
                 </h3>
                 <ul role="list" class="mt-6 space-y-6">
-                  <li v-for="item in footerNavigation.customerService" :key="item.name" class="text-sm">
-                    <a :href="item.href" class="text-gray-500 hover:text-gray-600">{{ item.name }}</a>
+                  <li
+                    v-for="item in footerNavigation.customerService"
+                    :key="item.name"
+                    class="text-sm"
+                  >
+                    <a :href="item.href" class="text-gray-500 hover:text-gray-600">{{
+                      item.name
+                    }}</a>
                   </li>
                 </ul>
               </div>
             </div>
 
             <!-- Newsletter section -->
-            <div class="mt-12 md:col-span-8 md:col-start-3 md:row-start-2 md:mt-0 lg:col-span-4 lg:col-start-9 lg:row-start-1">
+            <div
+              class="mt-12 md:col-span-8 md:col-start-3 md:row-start-2 md:mt-0 lg:col-span-4 lg:col-start-9 lg:row-start-1"
+            >
               <h3 class="text-sm font-medium text-gray-900">
                 Sign up for our newsletter
               </h3>
@@ -742,9 +1090,18 @@ const selectedColor = ref(product.colors[0])
               </p>
               <form class="mt-2 flex sm:max-w-md">
                 <label for="email-address" class="sr-only">Email address</label>
-                <input id="email-address" type="text" autocomplete="email" required="" class="w-full min-w-0 appearance-none rounded-md border border-gray-300 bg-white py-2 px-4 text-base text-gray-900 placeholder-gray-500 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                <input
+                  id="email-address"
+                  type="text"
+                  autocomplete="email"
+                  required=""
+                  class="w-full min-w-0 appearance-none rounded-md border border-gray-300 bg-white py-2 px-4 text-base text-gray-900 placeholder-gray-500 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                >
                 <div class="ml-4 flex-shrink-0">
-                  <button type="submit" class="flex w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-base font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                  <button
+                    type="submit"
+                    class="flex w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-base font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                  >
                     Sign up
                   </button>
                 </div>

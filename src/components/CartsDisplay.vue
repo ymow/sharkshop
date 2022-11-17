@@ -1,8 +1,42 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { defineComponent, defineExpose, defineProps, toRaw, toRefs } from 'vue'
 import { userCart } from '@/store/cart'
+import type { Order, OrderItem } from '@/types/order'
 
+// const props = defineProps<{
+//   product: object
+// }>()
+
+// defineProps(['prodcutPage'])
+
+const { getItems } = useDirectusItems()
 const cart = userCart()
+const currentOrder = ref([])
+const cartCounter = ref(0)
+const itemsOfOrder = [
+  '*',
+  'items.*',
+]
+const orderId = ''
+const order: Order[] = ''
+const fetchOrders = async () => {
+  try {
+    currentOrder.value = await getItems<Order>({
+      collection: 'orders',
+      params: {
+        fields: itemsOfOrder,
+      },
+
+    })
+    cartCounter.value = currentOrder.value[0].items.length
+    cart.upadteCart(currentOrder.value[0])
+  }
+  catch (e) {}
+  return currentOrder
+}
+
+fetchOrders()
+defineExpose({ cartCounter })
 </script>
 
 <template>
