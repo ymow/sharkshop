@@ -1,22 +1,24 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import {
   Dialog,
   DialogPanel,
+  Listbox,
+  ListboxButton,
+  ListboxLabel,
+  ListboxOption,
+  ListboxOptions,
   Popover,
   PopoverButton,
   PopoverGroup,
   PopoverPanel,
   Tab,
   TabGroup,
-  TabList,
-  TabPanel,
-  TabPanels,
-  TransitionChild,
-  TransitionRoot,
+  TabList, TabPanel, TabPanels, TransitionChild, TransitionRoot,
 } from '@headlessui/vue'
 import { Bars3Icon, MagnifyingGlassIcon, ShoppingBagIcon, UserIcon, XMarkIcon } from '@heroicons/vue/24/outline'
-import { CheckIcon, ClockIcon } from '@heroicons/vue/20/solid'
+import { CheckIcon, ChevronUpDownIcon, ClockIcon } from '@heroicons/vue/20/solid'
+import { TRUE } from 'sass'
 import { toCurrency } from '@/utils/utils'
 import { useProductStore } from '@/store/products'
 import type { Product } from '@/store/products'
@@ -288,6 +290,21 @@ productStore.fetchAll()
 const cart = userCart()
 
 const open = ref(false)
+
+const quantity_options = [
+  { id: 1, name: 'Wade Cooper' },
+  { id: 2, name: 'Arlene Mccoy' },
+  { id: 3, name: 'Devon Webb' },
+  { id: 4, name: 'Tom Cook' },
+  { id: 5, name: 'Tanya Fox' },
+  { id: 6, name: 'Hellen Schmidt' },
+  { id: 7, name: 'Caroline Schultz' },
+  { id: 8, name: 'Mason Heaney' },
+  { id: 9, name: 'Claudie Smitham' },
+  { id: 10, name: 'Emil Schaefer' },
+]
+
+const selected = ref(quantity_options[0])
 </script>
 
 <template>
@@ -507,7 +524,7 @@ const open = ref(false)
                       <div class="flex justify-between sm:grid sm:grid-cols-2">
                         <div class="pr-6">
                           <h3 class="text-sm">
-                            <a :href="product.href" class="font-medium text-gray-700 hover:text-gray-800">{{ product.name }}</a>
+                            <a :href="product.href" class="font-medium text-gray-700 hover:text-gray-800">{{ product.product_name }}</a>
                           </h3>
                           <p class="mt-1 text-sm text-gray-500">
                             {{ product.color }}
@@ -521,35 +538,33 @@ const open = ref(false)
                           {{ product.price }}
                         </p>
                       </div>
-
                       <div class="mt-4 flex items-center sm:absolute sm:top-0 sm:left-1/2 sm:mt-0 sm:block">
-                        <label :for="`quantity-${productIdx}`" class="sr-only">Quantity, {{ product.name }}</label>
-                        <select :id="`quantity-${productIdx}`" :name="`quantity-${productIdx}`" class="block max-w-full rounded-md border border-gray-300 py-1.5 text-left text-base font-medium leading-5 text-gray-700 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm">
-                          <option value="1">
-                            1
-                          </option>
-                          <option value="2">
-                            2
-                          </option>
-                          <option value="3">
-                            3
-                          </option>
-                          <option value="4">
-                            4
-                          </option>
-                          <option value="5">
-                            5
-                          </option>
-                          <option value="6">
-                            6
-                          </option>
-                          <option value="7">
-                            7
-                          </option>
-                          <option value="8">
-                            8
-                          </option>
-                        </select>
+                        <Listbox v-model="quantity_options[product.quantity]" as="div">
+                          <ListboxLabel class="block text-sm font-medium text-gray-700">
+                            Qty.
+                          </ListboxLabel>
+                          <div class="relative mt-1">
+                            <ListboxButton class="relative w-full cursor-default rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-left shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm">
+                              <span class="block truncate">{{ quantity_options[product.quantity].name }}</span>
+                              <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                                <ChevronUpDownIcon class="h-5 w-5 text-gray-400" aria-hidden="true" />
+                              </span>
+                            </ListboxButton>
+                          </div>
+                          <transition leave-active-class="transition ease-in duration-100" leave-from-class="opacity-100" leave-to-class="opacity-0">
+                            <ListboxOptions class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
+                              <ListboxOption v-for="quantity in quantity_options" :key="quantity.id" v-slot="{ active, selected }" as="template" :value="quantity">
+                                <li class="relative cursor-default select-none py-2 pl-8 pr-4" :class="[active ? 'text-white bg-indigo-600' : 'text-gray-900']">
+                                  <span class="block truncate" :class="[selected ? 'font-semibold' : 'font-normal']">{{ quantity.name }}</span>
+
+                                  <span v-if="selected" class="absolute inset-y-0 left-0 flex items-center pl-1.5" :class="[active ? 'text-white' : 'text-indigo-600']">
+                                    <CheckIcon class="h-5 w-5" aria-hidden="true" />
+                                  </span>
+                                </li>
+                              </ListboxOption>
+                            </ListboxOptions>
+                          </transition>
+                        </Listbox>
 
                         <button type="button" class="ml-4 text-sm font-medium text-indigo-600 hover:text-indigo-500 sm:ml-0 sm:mt-3">
                           <span>Remove</span>
