@@ -305,6 +305,7 @@ const quantity_options = [
 ]
 
 const selected = ref(quantity_options[0])
+console.log(selected.value.name)
 </script>
 
 <template>

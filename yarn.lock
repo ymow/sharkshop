@@ -526,7 +526,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@heroicons/vue@npm:^2.0.13":
+"@heroicons/vue@npm:latest":
   version: 2.0.13
   resolution: "@heroicons/vue@npm:2.0.13"
   peerDependencies:
@@ -9405,7 +9405,7 @@ __metadata:
   dependencies:
     "@antfu/eslint-config": 0.27.0
     "@headlessui/vue": 1.7.3
-    "@heroicons/vue": ^2.0.13
+    "@heroicons/vue": latest
     "@huntersofbook/naive-ui-nuxt": 0.3.9
     "@iconify-json/carbon": 1.1.9
     "@iconify-json/ic": 1.1.9
