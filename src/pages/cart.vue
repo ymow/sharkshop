@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onBeforeMount, onMounted, ref, toRaw } from 'vue'
 import {
   Dialog,
   DialogPanel,
@@ -23,6 +23,13 @@ import { toCurrency } from '@/utils/utils'
 import { useProductStore } from '@/store/products'
 import type { Product } from '@/store/products'
 import { userCart } from '@/store/cart'
+import type { OrderItem } from '@/types/order'
+const { deleteItems } = useDirectusItems()
+const refreshOrderItem = ref(0)
+
+const forceRerender = () => {
+  refreshOrderItem.value += 1
+}
 
 const navigation = {
   categories: [
@@ -291,21 +298,40 @@ const cart = userCart()
 
 const open = ref(false)
 
-const quantity_options = [
-  { id: 1, name: 'Wade Cooper' },
-  { id: 2, name: 'Arlene Mccoy' },
-  { id: 3, name: 'Devon Webb' },
-  { id: 4, name: 'Tom Cook' },
-  { id: 5, name: 'Tanya Fox' },
-  { id: 6, name: 'Hellen Schmidt' },
-  { id: 7, name: 'Caroline Schultz' },
-  { id: 8, name: 'Mason Heaney' },
-  { id: 9, name: 'Claudie Smitham' },
-  { id: 10, name: 'Emil Schaefer' },
+const quantities = [
+  { value: 0, label: '0' },
+  { value: 1, label: '1' },
+  { value: 2, label: '2' },
+  { value: 3, label: '3' },
+  { value: 4, label: '4' },
+  { value: 5, label: '5' },
 ]
 
-const selected = ref(quantity_options[0])
-console.log(selected.value.name)
+const form = ref([])
+
+const deleteYou = ref(null)
+
+const orderItemIds = []
+
+const deleteCartOnClick: OrderItem = async (orderItem) => {
+  cart.deleteCartItem(orderItem)
+  await forceRerender()
+  // console.log('startdo')
+  // // console.log(orderItem)
+  // try {
+  //   // orderItemIds.push(orderItem.id)
+  //   // console.log(orderItemIds)
+  //   const abc: OrderItem = ['256']
+  //   await deleteItems({ collection: 'order_items', abc })
+  // }
+  // // console.log('deletedOrderItem result:')
+  // // console.log(toRaw(deletedOrderItem.value))
+  // catch (e) {
+  //   console.log('delete error:')
+  //   console.log('abc')
+  //   console.log(e)
+  // }
+}
 </script>
 
 <template>
@@ -493,7 +519,7 @@ console.log(selected.value.name)
               </a>
 
               <!-- Cart -->
-              <CartsDisplay />
+              <CartsDisplay :key="refreshOrderItem" />
             </div>
           </div>
         </div>
@@ -539,37 +565,32 @@ console.log(selected.value.name)
                           {{ product.price }}
                         </p>
                       </div>
-                      <div class="mt-4 flex items-center sm:absolute sm:top-0 sm:left-1/2 sm:mt-0 sm:block">
-                        <Listbox v-model="quantity_options[product.quantity]" as="div">
-                          <ListboxLabel class="block text-sm font-medium text-gray-700">
-                            Qty.
-                          </ListboxLabel>
-                          <div class="relative mt-1">
-                            <ListboxButton class="relative w-full cursor-default rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-left shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm">
-                              <span class="block truncate">{{ quantity_options[product.quantity].name }}</span>
-                              <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
-                                <ChevronUpDownIcon class="h-5 w-5 text-gray-400" aria-hidden="true" />
-                              </span>
-                            </ListboxButton>
-                          </div>
-                          <transition leave-active-class="transition ease-in duration-100" leave-from-class="opacity-100" leave-to-class="opacity-0">
-                            <ListboxOptions class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
-                              <ListboxOption v-for="quantity in quantity_options" :key="quantity.id" v-slot="{ active, selected }" as="template" :value="quantity">
-                                <li class="relative cursor-default select-none py-2 pl-8 pr-4" :class="[active ? 'text-white bg-indigo-600' : 'text-gray-900']">
-                                  <span class="block truncate" :class="[selected ? 'font-semibold' : 'font-normal']">{{ quantity.name }}</span>
+                      <div class="p-4 mx-auto max-w-2xl">
+                        <form
+                          action="#"
+                          class="flex flex-col space-y-6"
+                        >
+                          <h1>{{ 'aaaa' }}</h1>
+                          <h1>{{ form[productIdx] }}</h1>
+                          <BaseListbox
+                            v-model="form[productIdx]"
+                            placeholder="Select quantity"
+                            :options="quantities"
+                            :qty="quantities[product.quantity]"
+                            :cart-item="cart.currentCart.items[productIdx]"
+                          />
 
-                                  <span v-if="selected" class="absolute inset-y-0 left-0 flex items-center pl-1.5" :class="[active ? 'text-white' : 'text-indigo-600']">
-                                    <CheckIcon class="h-5 w-5" aria-hidden="true" />
-                                  </span>
-                                </li>
-                              </ListboxOption>
-                            </ListboxOptions>
-                          </transition>
-                        </Listbox>
-
-                        <button type="button" class="ml-4 text-sm font-medium text-indigo-600 hover:text-indigo-500 sm:ml-0 sm:mt-3">
-                          <span>Remove</span>
-                        </button>
+                          <n-button
+                            :key="refreshOrderItem"
+                            class="btn btn-primary ml-4 text-sm font-medium text-indigo-600 hover:text-indigo-500 sm:ml-0 sm:mt-3"
+                            strong
+                            secondary
+                            type="default"
+                            @click="deleteCartOnClick(cart.currentCart.items[productIdx])"
+                          >
+                            Remove from Cart
+                          </n-button>
+                        </form>
                       </div>
                     </div>
 

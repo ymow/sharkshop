@@ -1,13 +1,9 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import {
-  Listbox,
-  ListboxButton,
-  ListboxOption,
-  ListboxOptions,
-} from '@headlessui/vue'
+import { computed, onBeforeMount } from 'vue'
+import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from '@headlessui/vue'
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/vue/24/solid'
 import type { OrderItem } from '@/types/order'
+import { userCart } from '@/store/cart'
 
 const props = defineProps({
   options: Array,
@@ -16,47 +12,90 @@ const props = defineProps({
     type: String,
     default: 'Select option',
   },
+  qty: Object,
+  cartItem: Object,
   multiple: Boolean,
   error: String,
 })
+
 const emit = defineEmits(['update:modelValue'])
 
-const { getItems } = useDirectusItems()
+const cart = userCart()
+
+const { updateItem } = useDirectusItems()
 
 const orderItem = ref(null)
 
-const fetchOrderItemById = async (orderId) => {
-  try {
-    orderItem.value = await getItems<OrderItem>({
-      collection: 'order_items',
-    })
-    console.log('abc', toRaw(orderItem.value))
+// const fetchOrderItemById = async (orderId) => {
+//   try {
+//     orderItem.value = await getItems<OrderItem>({
+//       collection: 'order_items',
+//     })
+//     console.log('fetchOrderItemById', toRaw(orderItem.value))
+//   }
+//   catch (e) {}
+//   return orderItem
+// }
+
+const updatedOrderItem = ref(null)
+const updateOrderItemById: OrderItem = async (orderItem, qty) => {
+  const orderItemId = orderItem.id
+  console.log('updating Order Item ')
+  console.log(orderItem)
+  console.log(qty)
+  console.log(orderItemId)
+  const newItem: OrderItem[] = {
+    id: orderItemId,
+    order_id: orderItem.order_id,
+    product_id: orderItem.product_id,
+    product_name: orderItem.name,
+    price: orderItem.price,
+    quantity: qty,
+    spec: orderItem.specs,
+    sku: '',
+    delivery_option: 'expresss',
   }
-  catch (e) {}
-  return orderItem
+  console.log(newItem)
+  try {
+    const filters = { id: 'orderItemId' }
+    updatedOrderItem.value = await updateItem<OrderItem>({
+      collection: 'order_items',
+      id: orderItemId,
+      item: newItem,
+    })
+    console.log('updateOrderItemById result:')
+    console.log(toRaw(updatedOrderItem.value))
+  }
+  catch (e) {
+    console.log('update error:')
+    console.log(e)
+  }
 }
 
-watch(() => props.modelValue, (first, second) => {
-  console.log(
-    'Watch props.selected function called with args:',
-    first,
-    second,
-  )
-  console.log(
-    'execute Order Item updating for first:',
-    first,
-  )
+watch(
+  () => props.modelValue,
+  (first, second) => {
+    console.log('Watch props.selected function called with args:', first, second)
+    console.log('execute Order Item updating for first:', first)
 
-  console.log(
-    'Query Order Item from Directus:',
-    first,
-  )
-  const newQty = first
-  fetchOrderItemById(newQty)
+    const cart = userCart()
+
+    console.log('Query Order Item from Directus:', first)
+
+    console.log('CartItemId:', toRaw(props.cartItem))
+
+    const newQty = first
+    updateOrderItemById(toRaw(props.cartItem), newQty)
+  },
+)
+
+onBeforeMount(() => {
+  // console.log(props.qty)
+  // return props.modelValue.value === props.qty
 })
 
 const label = computed(() => {
-  console.log(toRaw(props.modelValue))
+  // console.log(`${props.modelValue}is selected`)
   // update the order item
   // https://www.youtube.com/watch?v=MxmhjBDAa0k
   // https://tallpad.com/series/headlessui/lessons/building-a-menu-tree-vue-component-with-tailwindcss-and-headlessui
@@ -75,30 +114,22 @@ const label = computed(() => {
 </script>
 
 <template>
+  <p>{{ props.cartItemId }}</p>
   <Listbox
     :model-value="props.modelValue"
     :multiple="props.multiple"
-    @update:modelValue="value => emit('update:modelValue', value)"
+    @update:modelValue="(value) => emit('update:modelValue', value)"
   >
-    <div class="relative mt-1">
+    <div class="relative mt-1 float-right">
       <ListboxButton
-        class="relative py-2 pr-10 pl-3 w-full text-left bg-white rounded-lg shadow-md cursor-default focus:outline-none focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 focus-visible:ring-offset-2 focus-visible:ring-offset-orange-300 sm:text-sm"
+        class="relative py-2 pr-10 pl-3 w-200 text-left bg-white rounded-lg shadow-md cursor-default focus:outline-none focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 focus-visible:ring-offset-2 focus-visible:ring-offset-orange-300 sm:text-sm"
       >
-        <span
-          v-if="label"
-          class="block truncate"
-        >{{ label }}</span>
-        <span
-          v-else
-          class="text-gray-500"
-        >{{ props.placeholder }}</span>
+        <span v-if="label" class="block truncate">{{ label }}</span>
+        <span v-else class="text-gray-500">{{ props.qty.label }}</span>
         <span
           class="flex absolute inset-y-0 right-0 items-center pr-2 pointer-events-none"
         >
-          <ChevronUpDownIcon
-            aria-hidden="true"
-            class="w-5 h-5 text-gray-400"
-          />
+          <ChevronUpDownIcon aria-hidden="true" class="w-5 h-5 text-gray-400" />
         </span>
       </ListboxButton>
 
@@ -118,23 +149,18 @@ const label = computed(() => {
             as="template"
           >
             <li
-              class="relative cursor-default select-none py-2 pl-10 pr-4" :class="[
-                active ? 'bg-amber-100 text-amber-900' : 'text-gray-900',
-              ]"
+              class="relative cursor-default select-none py-2 pl-10 pr-4"
+              :class="[active ? 'bg-amber-100 text-amber-900' : 'text-gray-900']"
             >
               <span
-                class="block truncate" :class="[
-                  selected ? 'font-medium' : 'font-normal',
-                ]"
+                class="block truncate"
+                :class="[selected ? 'font-medium' : 'font-normal']"
               >{{ option.label }}</span>
               <span
                 v-if="selected"
                 class="flex absolute inset-y-0 left-0 items-center pl-3 text-amber-600"
               >
-                <CheckIcon
-                  aria-hidden="true"
-                  class="w-5 h-5"
-                />
+                <CheckIcon aria-hidden="true" class="w-5 h-5" />
               </span>
             </li>
           </ListboxOption>
