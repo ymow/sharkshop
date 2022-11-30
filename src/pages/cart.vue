@@ -312,18 +312,6 @@ const deleteYou = ref(null)
 
 const orderItemIds = []
 
-// const productDetail = ref(null)
-// const getProductImage = async (productId) => {
-//   try {
-//     productDetail.value = await getItemById({
-//       collection: 'products',
-//       id: productId,
-//     })
-//     return productDetail.value.cover_image_data
-//   }
-//   catch (e) {}
-// }
-
 const deleteCartOnClick: OrderItem = async (orderItem) => {
   cart.deleteCartItem(orderItem)
   await forceRerender()
@@ -351,7 +339,6 @@ function onQuantityChanged(changedQtyValue) {
 
 function productQuery(productId) {
   return productStore.items[productId]
-  // return productStore[productId]
 }
 </script>
 
