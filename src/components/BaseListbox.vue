@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import { computed, onBeforeMount } from 'vue'
+import { computed, defineExpose, onBeforeMount, ref } from 'vue'
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from '@headlessui/vue'
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/vue/24/solid'
 import type { OrderItem } from '@/types/order'
 import { userCart } from '@/store/cart'
-
 const props = defineProps({
   options: Array,
   modelValue: [String, Number, Array],
@@ -18,32 +17,14 @@ const props = defineProps({
   error: String,
 })
 
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits(['update:modelValue', 'quantityChanged'])
 
 const cart = userCart()
 
 const { updateItem } = useDirectusItems()
-
-const orderItem = ref(null)
-
-// const fetchOrderItemById = async (orderId) => {
-//   try {
-//     orderItem.value = await getItems<OrderItem>({
-//       collection: 'order_items',
-//     })
-//     console.log('fetchOrderItemById', toRaw(orderItem.value))
-//   }
-//   catch (e) {}
-//   return orderItem
-// }
-
 const updatedOrderItem = ref(null)
 const updateOrderItemById: OrderItem = async (orderItem, qty) => {
   const orderItemId = orderItem.id
-  console.log('updating Order Item ')
-  console.log(orderItem)
-  console.log(qty)
-  console.log(orderItemId)
   const newItem: OrderItem[] = {
     id: orderItemId,
     order_id: orderItem.order_id,
@@ -52,10 +33,9 @@ const updateOrderItemById: OrderItem = async (orderItem, qty) => {
     price: orderItem.price,
     quantity: qty,
     spec: orderItem.specs,
-    sku: '',
-    delivery_option: 'expresss',
+    sku: orderItem.sku,
+    delivery_option: orderItem.delivery_option,
   }
-  console.log(newItem)
   try {
     const filters = { id: 'orderItemId' }
     updatedOrderItem.value = await updateItem<OrderItem>({
@@ -63,29 +43,21 @@ const updateOrderItemById: OrderItem = async (orderItem, qty) => {
       id: orderItemId,
       item: newItem,
     })
-    console.log('updateOrderItemById result:')
-    console.log(toRaw(updatedOrderItem.value))
   }
   catch (e) {
-    console.log('update error:')
-    console.log(e)
   }
 }
 
 watch(
   () => props.modelValue,
   (first, second) => {
-    console.log('Watch props.selected function called with args:', first, second)
-    console.log('execute Order Item updating for first:', first)
-
     const cart = userCart()
 
-    console.log('Query Order Item from Directus:', first)
-
-    console.log('CartItemId:', toRaw(props.cartItem))
+    console.log('Query Order Item from Directus:', first, second)
 
     const newQty = first
-    updateOrderItemById(toRaw(props.cartItem), newQty)
+    if (newQty > 0)
+      updateOrderItemById(toRaw(props.cartItem), newQty)
   },
 )
 
@@ -111,6 +83,10 @@ const label = computed(() => {
     .map(option => option.label)
     .join(', ')
 })
+
+const emitFunction = function (changedQtyValue) {
+  emit('quantityChanged', changedQtyValue)
+}
 </script>
 
 <template>
@@ -119,6 +95,7 @@ const label = computed(() => {
     :model-value="props.modelValue"
     :multiple="props.multiple"
     @update:modelValue="(value) => emit('update:modelValue', value)"
+    @click="emitFunction(modelValue)"
   >
     <div class="relative mt-1 float-right">
       <ListboxButton

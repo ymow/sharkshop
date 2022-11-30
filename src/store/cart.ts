@@ -26,7 +26,7 @@ export const userCart = defineStore('cart', {
       }
     },
     deleteCartItem(cartItem) {
-    // pick and filter orders than sent picked order as current order from CartsDisplay Components
+    // delete cartItem from cart page
       if (cartItem) {
         fetch(`${sharkStoreUrl}/items/order_items/${cartItem.id}`, { method: 'DELETE' })
           .then(async (response) => {
@@ -50,6 +50,8 @@ export const userCart = defineStore('cart', {
   },
   getters: {
     cartTotal: state =>
-      state.cartItems.map(item => item.price).reduce((a, c) => a + c, 0),
+      state.cartItems.reduce((total, item) => {
+        return total + (item.price * item.quantity)
+      }, 0),
   },
 })

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onBeforeMount, onMounted, ref, toRaw } from 'vue'
+import { computed, onBeforeMount, onMounted, ref, toRaw } from 'vue'
 import {
   Dialog,
   DialogPanel,
@@ -19,14 +19,14 @@ import {
 import { Bars3Icon, MagnifyingGlassIcon, ShoppingBagIcon, UserIcon, XMarkIcon } from '@heroicons/vue/24/outline'
 import { CheckIcon, ChevronUpDownIcon, ClockIcon } from '@heroicons/vue/20/solid'
 import { TRUE } from 'sass'
+import BaseListbox from '@/components/BaseListbox.vue'
 import { toCurrency } from '@/utils/utils'
 import { useProductStore } from '@/store/products'
 import type { Product } from '@/store/products'
 import { userCart } from '@/store/cart'
 import type { OrderItem } from '@/types/order'
-const { deleteItems } = useDirectusItems()
+const { getItemById, deleteItems } = useDirectusItems()
 const refreshOrderItem = ref(0)
-
 const forceRerender = () => {
   refreshOrderItem.value += 1
 }
@@ -299,7 +299,6 @@ const cart = userCart()
 const open = ref(false)
 
 const quantities = [
-  { value: 0, label: '0' },
   { value: 1, label: '1' },
   { value: 2, label: '2' },
   { value: 3, label: '3' },
@@ -313,9 +312,22 @@ const deleteYou = ref(null)
 
 const orderItemIds = []
 
+// const productDetail = ref(null)
+// const getProductImage = async (productId) => {
+//   try {
+//     productDetail.value = await getItemById({
+//       collection: 'products',
+//       id: productId,
+//     })
+//     return productDetail.value.cover_image_data
+//   }
+//   catch (e) {}
+// }
+
 const deleteCartOnClick: OrderItem = async (orderItem) => {
   cart.deleteCartItem(orderItem)
   await forceRerender()
+  // deleted fail with Nuxt-Directus API due to OrderItem dataset not available!
   // console.log('startdo')
   // // console.log(orderItem)
   // try {
@@ -331,6 +343,15 @@ const deleteCartOnClick: OrderItem = async (orderItem) => {
   //   console.log('abc')
   //   console.log(e)
   // }
+}
+
+function onQuantityChanged(changedQtyValue) {
+  forceRerender()
+}
+
+function productQuery(productId) {
+  return productStore.items[productId]
+  // return productStore[productId]
 }
 </script>
 
@@ -519,7 +540,7 @@ const deleteCartOnClick: OrderItem = async (orderItem) => {
               </a>
 
               <!-- Cart -->
-              <CartsDisplay :key="refreshOrderItem" />
+              <CartsDisplay ref="currentCart" :key="refreshOrderItem" />
             </div>
           </div>
         </div>
@@ -543,7 +564,7 @@ const deleteCartOnClick: OrderItem = async (orderItem) => {
               <ul role="list" class="divide-y divide-gray-200 border-t border-b border-gray-200">
                 <li v-for="(product, productIdx) in cart.cartItems" :key="cart.id" class="flex py-6 sm:py-10">
                   <div class="flex-shrink-0">
-                    <img :src="product.cover_image_data" :alt="product.imageAlt" class="h-24 w-24 rounded-lg object-cover object-center sm:h-32 sm:w-32">
+                    <img :src="productQuery(product.product_id).cover_image_data" :alt="product.imageAlt" class="h-24 w-24 rounded-lg object-cover object-center sm:h-32 sm:w-32">
                   </div>
 
                   <div class="relative ml-4 flex flex-1 flex-col justify-between sm:ml-6">
@@ -570,16 +591,14 @@ const deleteCartOnClick: OrderItem = async (orderItem) => {
                           action="#"
                           class="flex flex-col space-y-6"
                         >
-                          <h1>{{ 'aaaa' }}</h1>
-                          <h1>{{ form[productIdx] }}</h1>
                           <BaseListbox
                             v-model="form[productIdx]"
                             placeholder="Select quantity"
                             :options="quantities"
                             :qty="quantities[product.quantity]"
                             :cart-item="cart.currentCart.items[productIdx]"
+                            @quantityChanged="onQuantityChanged"
                           />
-
                           <n-button
                             :key="refreshOrderItem"
                             class="btn btn-primary ml-4 text-sm font-medium text-indigo-600 hover:text-indigo-500 sm:ml-0 sm:mt-3"
@@ -617,7 +636,7 @@ const deleteCartOnClick: OrderItem = async (orderItem) => {
                       <dt class="text-gray-600">
                         Subtotal
                       </dt>
-                      <dd class="font-medium text-gray-900">
+                      <dd :key="refreshOrderItem" class="font-medium text-gray-900">
                         {{ cart.cartTotal }}
                       </dd>
                     </div>

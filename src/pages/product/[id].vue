@@ -767,7 +767,7 @@ const selectedColor = ref(product.colors[0])
                   <span class="ml-2 text-sm font-medium text-gray-700 group-hover:text-gray-800">0</span>
                   <span class="sr-only">items in cart, view bag</span>
                 </a> -->
-                <!-- <p>{{ cartCounter }}</p> -->
+                <p>{{ cartCounter }}</p>
               </div>
             </div>
           </div>
